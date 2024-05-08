@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MauiCrud.Data
 {
-    public class DatabaseContext
+    public class DatabaseContext : IAsyncDisposable
     {
         private const string DbName = "MyDatabase.db3";
         
@@ -61,5 +61,7 @@ namespace MauiCrud.Data
             await CreateTableIfNotExists<TTable>();
             return await Database.DeleteAsync<TTable>(primaryKey) > 0;
         }
+
+        public async ValueTask DisposeAsync() => await _connection?.CloseAsync();
     }
 }
