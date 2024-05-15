@@ -67,10 +67,10 @@ namespace MauiCrud.ViewModels
             }
         }
 
-        [RelayCommand]
+        [ICommand]
         private void SetOperatingProduct(Product? product) => OperatingProduct = product ?? new();
 
-        [RelayCommand]
+        [ICommand]
         private async Task SaveProductAsync()
         {
             if (OperatingProduct is null)
@@ -110,5 +110,23 @@ namespace MauiCrud.ViewModels
                 SetOperatingProductCommand.Execute(new());
             }, busyText);
         }
+
+        [ICommand]
+        private async Task DeleteProductAsync(int id)
+        {
+            await ExecuteAsync(async () =>
+            {
+                if (await _context.DeleteItemByKeyAsync<Product>(id))
+                {
+                    var product = Products.FirstOrDefault(p => p.Id == id);
+                    Products.Remove(product);
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlert("Delete Error", "Product was not deleted", "Ok");
+                }
+            }, "Deleting Product...");
+        }
+
     }
 }
