@@ -13,6 +13,7 @@
     </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto, *">
+
         <VerticalStackLayout Grid.RowSpan="2"
                              VerticalOptions="Center"
                              HorizontalOptions="Center"
@@ -24,11 +25,13 @@
                    VerticalOptions="Center"
                    HorizontalOptions="Center"/>
         </VerticalStackLayout>
+
         <Label Grid.Row="0"
                Text="Products"
                FontAttributes="Bold"
                FontSize="18"
                Padding="10"/>
+
         <Grid Grid.Row="1"
               RowDefinitions="*, Auto">
             <CollectionView Grid.Row="0"
@@ -47,13 +50,13 @@
                             <Label Grid.Row="0"
                                    Grid.Column="0"
                                    Text="{Binding Name}"
-                                   FontAttributes="Bold"/>
+                                   FontAttributes="Bold" />
                             <Label Grid.Row="1"
                                    Grid.Column="0"
                                    Text="{Binding Price, StringFormat='Price: {0}'}"
                                    FontSize="12"
-                                   FontAttributes="Bold"/>
-                            
+                                   FontAttributes="Bold" />
+
                             <Button Grid.Row="0"
                                     Grid.Column="1"
                                     Text="Edit"
@@ -61,7 +64,7 @@
                                     HeightRequest="25"
                                     FontSize="12"
                                     CornerRadius="2"
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path=SetOperationProductCommand}"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path=SetOperatingProductCommand}"
                                     CommandParameter="{Binding .}"/>
 
                             <Button Grid.Row="1"
@@ -72,7 +75,7 @@
                                     FontSize="12"
                                     CornerRadius="2"
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path=DeleteProductCommand}"
-                                    CommandParameter="{Binding Id}"/>
+                                    CommandParameter="{Binding Id}" />
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
@@ -80,11 +83,11 @@
                     <ContentView>
                         <VerticalStackLayout HorizontalOptions="Center"
                                              VerticalOptions="Center">
-                            <Label Text="No Product Found"
+                            <Label Text="No Products Found"
                                    FontSize="18"
                                    FontAttributes="Bold"
                                    HorizontalTextAlignment="Center"/>
-                            <Label Text="Try creating a product from the form bellow"/>
+                            <Label Text="Try creating a product from the form below"/>
                         </VerticalStackLayout>
                     </ContentView>
                 </CollectionView.EmptyView>
@@ -124,9 +127,10 @@
                             VerticalOptions="End"
                             CornerRadius="4"
                             Padding="50, 0"
-                            Command="{Binding SaveProductCommand}">
+                            Command="{Binding SaveProductCommand}"
+                            >
                         <Button.Triggers>
-                            <DataTrigger TargetType="Button"
+                            <DataTrigger TargetType="Button" 
                                          Binding="{Binding OperatingProduct.Id}"
                                          Value="0">
                                 <Setter Property="Text" Value="Create Product"/>
@@ -135,6 +139,7 @@
                     </Button>
                 </Grid>
             </VerticalStackLayout>
+
         </Grid>
     </Grid>
 

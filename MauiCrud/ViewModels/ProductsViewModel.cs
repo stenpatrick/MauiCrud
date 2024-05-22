@@ -2,18 +2,14 @@
 using CommunityToolkit.Mvvm.Input;
 using MauiCrud.Data;
 using MauiCrud.Models;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MauiCrud.ViewModels
 {
     public partial class ProductsViewModel : ObservableObject
     {
         private readonly DatabaseContext _context;
+
         public ProductsViewModel(DatabaseContext context)
         {
             _context = context;
@@ -48,25 +44,6 @@ namespace MauiCrud.ViewModels
             }, "Fetching products...");
         }
 
-        private async Task ExecuteAsync(Func<Task> operation, string? busyText = null)
-        {
-            IsBusy = true;
-            BusyText = busyText ?? "Processing...";
-            try
-            {
-                await operation?.Invoke();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            finally
-            {
-                IsBusy = false;
-                BusyText = "Processing...";
-            }
-        }
-
         [ICommand]
         private void SetOperatingProduct(Product? product) => OperatingProduct = product ?? new();
 
@@ -75,8 +52,9 @@ namespace MauiCrud.ViewModels
         {
             if (OperatingProduct is null)
                 return;
+
             var (isValid, errorMessage) = OperatingProduct.Validate();
-            if (isValid)
+            if (!isValid)
             {
                 await Shell.Current.DisplayAlert("Validation Error", errorMessage, "Ok");
                 return;
@@ -87,11 +65,13 @@ namespace MauiCrud.ViewModels
             {
                 if (OperatingProduct.Id == 0)
                 {
+                    // Create product
                     await _context.AddItemAsync<Product>(OperatingProduct);
                     Products.Add(OperatingProduct);
                 }
                 else
                 {
+                    // Update product
                     if (await _context.UpdateItemAsync<Product>(OperatingProduct))
                     {
                         var productCopy = OperatingProduct.Clone();
@@ -103,7 +83,7 @@ namespace MauiCrud.ViewModels
                     }
                     else
                     {
-                        await Shell.Current.DisplayAlert("Error", "Product updating error", "Ok");
+                        await Shell.Current.DisplayAlert("Error", "Product updation error", "Ok");
                         return;
                     }
                 }
@@ -125,8 +105,26 @@ namespace MauiCrud.ViewModels
                 {
                     await Shell.Current.DisplayAlert("Delete Error", "Product was not deleted", "Ok");
                 }
-            }, "Deleting Product...");
+            }, "Deleting product...");
         }
 
+        private async Task ExecuteAsync(Func<Task> operation, string? busyText = null)
+        {
+            IsBusy = true;
+            BusyText = busyText ?? "Processing...";
+            try
+            {
+                await operation?.Invoke();
+            }
+            catch (Exception ex)
+            {
+
+            }
+            finally
+            {
+                IsBusy = false;
+                BusyText = "Processing...";
+            }
+        }
     }
 }

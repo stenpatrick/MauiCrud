@@ -1,21 +1,22 @@
 ﻿using MauiCrud.ViewModels;
 
 namespace MauiCrud
-{
-    public partial class MainPage : ContentPage
     {
-        private readonly ProductsViewModel _productsviewModel;
-        public MainPage(ProductsViewModel productsViewModel)
+        public partial class MainPage : ContentPage
         {
-            InitializeComponent();
-            BindingContext = productsViewModel;
-            _productsviewModel = productsViewModel;
-        }
+            private readonly ProductsViewModel _viewModel;
 
-        protected async override void OnAppearing()
-        {
-            base.OnAppearing();
-            await _productsviewModel.LoadProductsAsync();
-        }
+            public MainPage(ProductsViewModel viewModel)
+            {
+                InitializeComponent();
+                BindingContext = viewModel;
+                _viewModel = viewModel;
+            }
+
+            protected async override void OnAppearing()
+            {
+                base.OnAppearing();
+                await _viewModel.LoadProductsAsync();
+            }
     }
 }
