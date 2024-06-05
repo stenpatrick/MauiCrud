@@ -1,22 +1,17 @@
-﻿using MauiCrud.ViewModels;
+﻿using Microsoft.Maui.Controls;
 
 namespace MauiCrud
+{
+    public partial class MainPage : ContentPage
     {
-        public partial class MainPage : ContentPage
+        public MainPage()
         {
-            private readonly ProductsViewModel _viewModel;
+            InitializeComponent();
+        }
 
-            public MainPage(ProductsViewModel viewModel)
-            {
-                InitializeComponent();
-                BindingContext = viewModel;
-                _viewModel = viewModel;
-            }
-
-            protected async override void OnAppearing()
-            {
-                base.OnAppearing();
-                await _viewModel.LoadProductsAsync();
-            }
+        private async void OnNavigateButtonClicked(object sender, EventArgs e)
+        {
+            await Navigation.PushAsync(new Pages.ProductList());
+        }
     }
 }

@@ -1,130 +1,120 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using MauiCrud.Data;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Windows.Input;
 using MauiCrud.Models;
-using System.Collections.ObjectModel;
+using SQLite;
 
 namespace MauiCrud.ViewModels
 {
-    public partial class ProductsViewModel : ObservableObject
+    public class ProductsViewModel : INotifyPropertyChanged
     {
-        private readonly DatabaseContext _context;
-
-        public ProductsViewModel(DatabaseContext context)
-        {
-            _context = context;
-        }
-
-        [ObservableProperty]
-        private ObservableCollection<Product> _products = new();
-
-        [ObservableProperty]
-        private Product _operatingProduct = new();
-
-        [ObservableProperty]
+        private Product _operatingProduct;
         private bool _isBusy;
+        private readonly SQLiteAsyncConnection _database;
 
-        [ObservableProperty]
-        private string _busyText;
-
-        public async Task LoadProductsAsync()
+        public ObservableCollection<Product> Products { get; set; }
+        public Product OperatingProduct
         {
-            await ExecuteAsync(async () =>
-            {
-                var products = await _context.GetAllAsync<Product>();
-                if (products is not null && products.Any())
-                {
-                    Products ??= new ObservableCollection<Product>();
-
-                    foreach (var product in products)
-                    {
-                        Products.Add(product);
-                    }
-                }
-            }, "Fetching products...");
+            get => _operatingProduct;
+            set => SetProperty(ref _operatingProduct, value);
         }
 
-        [ICommand]
-        private void SetOperatingProduct(Product? product) => OperatingProduct = product ?? new();
-
-        [ICommand]
-        private async Task SaveProductAsync()
+        public bool IsBusy
         {
-            if (OperatingProduct is null)
-                return;
-
-            var (isValid, errorMessage) = OperatingProduct.Validate();
-            if (!isValid)
-            {
-                await Shell.Current.DisplayAlert("Validation Error", errorMessage, "Ok");
-                return;
-            }
-
-            var busyText = OperatingProduct.Id == 0 ? "Creating product..." : "Updating product...";
-            await ExecuteAsync(async () =>
-            {
-                if (OperatingProduct.Id == 0)
-                {
-                    // Create product
-                    await _context.AddItemAsync<Product>(OperatingProduct);
-                    Products.Add(OperatingProduct);
-                }
-                else
-                {
-                    // Update product
-                    if (await _context.UpdateItemAsync<Product>(OperatingProduct))
-                    {
-                        var productCopy = OperatingProduct.Clone();
-
-                        var index = Products.IndexOf(OperatingProduct);
-                        Products.RemoveAt(index);
-
-                        Products.Insert(index, productCopy);
-                    }
-                    else
-                    {
-                        await Shell.Current.DisplayAlert("Error", "Product updation error", "Ok");
-                        return;
-                    }
-                }
-                SetOperatingProductCommand.Execute(new());
-            }, busyText);
+            get => _isBusy;
+            set => SetProperty(ref _isBusy, value, nameof(IsBusy));
         }
 
-        [ICommand]
-        private async Task DeleteProductAsync(int id)
+        public string BusyText { get; set; }
+
+        public ICommand SetOperatingProductCommand { get; }
+        public ICommand SaveProductCommand { get; }
+        public ICommand DeleteProductCommand { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public ProductsViewModel()
         {
-            await ExecuteAsync(async () =>
-            {
-                if (await _context.DeleteItemByKeyAsync<Product>(id))
-                {
-                    var product = Products.FirstOrDefault(p => p.Id == id);
-                    Products.Remove(product);
-                }
-                else
-                {
-                    await Shell.Current.DisplayAlert("Delete Error", "Product was not deleted", "Ok");
-                }
-            }, "Deleting product...");
+            _database = InitializeDatabase();
+
+            Products = new ObservableCollection<Product>();
+            OperatingProduct = new Product();
+            BusyText = "Loading products...";
+
+            SetOperatingProductCommand = new Command<Product>(SetOperatingProduct);
+            SaveProductCommand = new Command(async () => await SaveProduct());
+            DeleteProductCommand = new Command<int>(async (id) => await DeleteProduct(id));
+
+            LoadProducts();
         }
 
-        private async Task ExecuteAsync(Func<Task> operation, string? busyText = null)
+        private SQLiteAsyncConnection InitializeDatabase()
+        {
+            string dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Products.db3");
+            var database = new SQLiteAsyncConnection(dbPath);
+            database.CreateTableAsync<Product>().Wait();
+            return database;
+        }
+
+        private void SetOperatingProduct(Product product)
+        {
+            OperatingProduct = product ?? new Product();
+        }
+
+        private async Task SaveProduct()
         {
             IsBusy = true;
-            BusyText = busyText ?? "Processing...";
-            try
-            {
-                await operation?.Invoke();
-            }
-            catch (Exception ex)
-            {
 
-            }
-            finally
+            if (OperatingProduct.Id != 0)
             {
-                IsBusy = false;
-                BusyText = "Processing...";
+                await _database.UpdateAsync(OperatingProduct);
             }
+            else
+            {
+                await _database.InsertAsync(OperatingProduct);
+            }
+
+            OperatingProduct = new Product();
+            await LoadProducts();
+
+            IsBusy = false;
+        }
+
+        private async Task DeleteProduct(int productId)
+        {
+            var product = await _database.Table<Product>().Where(p => p.Id == productId).FirstOrDefaultAsync();
+            if (product != null)
+            {
+                await _database.DeleteAsync(product);
+                await LoadProducts();
+            }
+        }
+
+        private async Task LoadProducts()
+        {
+            IsBusy = true;
+
+            var products = await _database.Table<Product>().ToListAsync();
+            Products.Clear();
+            foreach (var product in products)
+            {
+                Products.Add(product);
+            }
+
+            IsBusy = false;
+        }
+
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void SetProperty<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (Equals(field, value)) return;
+            field = value;
+            OnPropertyChanged(propertyName);
         }
     }
 }
