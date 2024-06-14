@@ -18,7 +18,7 @@
                 Text="Vajuta mind..."
                 FontSize="20"
                 Clicked="OnNavigateButtonClicked"
-                BackgroundColor="#512BD4"
+                BackgroundColor="#00BCD4"
                 TextColor="White"
                 BorderColor="White"
                 FontAttributes="Bold"
