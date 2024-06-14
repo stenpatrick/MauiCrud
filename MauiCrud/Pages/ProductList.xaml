@@ -37,26 +37,32 @@
                         <Grid RowDefinitions="Auto, Auto"
                               ColumnDefinitions="*, Auto"
                               RowSpacing="3"
-                              Padding="3"
-                              BackgroundColor="DarkBlue">
+                              Padding="4"
+                              BackgroundColor="#512BD4">
                             <Label Text="{Binding Name}"
-                                   FontAttributes="Bold" 
-                                   TextColor="White"/>
+                                   FontAttributes="Bold" />
                             <Label Grid.Row="1"
                                    Text="{Binding Price, StringFormat='Price: {0:C}'}"
-                                   FontSize="13"
-                                   FontAttributes="Bold"                                    
-                                   TextColor="White"/>
-                            
+                                   FontAttributes="Bold"
+                                   FontSize="13"/>
                             <Button Grid.Row="1"
                                     Grid.Column="1"
                                     Text="Delete"
-                                    TextColor="White"
-                                    HeightRequest="30"
+                                    TextColor="#512BD4"
                                     FontSize="13"
+                                    HeightRequest="30"
                                     CornerRadius="6"
                                     Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path=DeleteProductCommand}"
                                     CommandParameter="{Binding Id}"/>
+                            <Button Grid.Column="1"
+                                    Text="Edit"
+                                    FontSize="13"
+                                    TextColor="#512BD4"
+                                    HeightRequest="30"
+                                    CornerRadius="6"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProductsViewModel}}, Path=SetOperatingProductCommand}"
+                                    CommandParameter="{Binding .}"/>
+
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
@@ -71,7 +77,7 @@
             </CollectionView>
 
             <VerticalStackLayout Grid.Row="1">
-                <BoxView Color="DarkBlue"
+                <BoxView Color="#512BD4"
                          HeightRequest="1" />
                 <Grid RowDefinitions="Auto, Auto"
                       ColumnDefinitions="*, Auto"
@@ -82,38 +88,35 @@
                     <VerticalStackLayout Grid.Row="0"
                                          Grid.Column="0">
                         <Label Text="Name" 
-                               TextColor="White"/>
+                               TextColor="#512BD4"/>
                         <Entry Text="{Binding OperatingProduct.Name}"
-                               BackgroundColor="#512BD4"                                    
-                               TextColor="White"/>
+                               BackgroundColor="#512BD4" />
                     </VerticalStackLayout>
                     <VerticalStackLayout Grid.Row="0"
                                          Grid.Column="1">
                         <Label Text="Price"
-                               TextColor="White"/>
+                               TextColor="#512BD4"/>
                         <Entry Text="{Binding OperatingProduct.Price}"
-                               Placeholder="Product price"
-                               Margin="3"
+                               Margin="1"
                                BackgroundColor="#512BD4"
-                               Keyboard="Numeric"                                  
-                               TextColor="White"/>
-
+                               Keyboard="Numeric" />
                     </VerticalStackLayout>
 
                     <Button Grid.Row="1"
                             Grid.ColumnSpan="2"
-                            Text="Update Product"
-                            TextColor="White"
+                            Text="Update product"
+                            TextColor="#512BD4"
                             HorizontalOptions="Center"
                             VerticalOptions="End"
                             CornerRadius="6"
+                            BorderColor="#512BD4"
                             Padding="50, 0"
                             Command="{Binding SaveProductCommand}">
                         <Button.Triggers>
                             <DataTrigger TargetType="Button"
                                          Binding="{Binding OperatingProduct.Id}"
                                          Value="0">
-                                <Setter Property="Text" Value="Create Product" />
+                                <Setter Property="Text" Value="Create product" />
                             </DataTrigger>
                         </Button.Triggers>
                     </Button>
